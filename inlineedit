@@ -1,0 +1,226 @@
+Tbgroupgridviewinlineedit
+=========================
+<?php
+
+
+ $grid=$this->widget('bootstrap.widgets.TbExtendedGridView', array(
+	'id'=>'clients-grid',
+	'dataProvider'=>$model->search(),
+	'enableSorting'=>false,
+	'bulkActions' => array(
+			'actionButtons' => array(
+					array(
+						'buttonType' => 'button',
+						'type' => 'primary',
+						'size' => 'small',			
+						'label' => 'Send Mail to the Clients',
+						
+						'click' => 'js:function(checked){
+								    var values = [];
+								    checked.each(function(){
+									         values.push($(this).val());
+									});
+									
+									$("#chkid").val(values);
+						}',
+						'htmlOptions' => array('data-toggle'=>'modal','data-target'=>'#myModal') ,
+										 'class'=>'bootstrap.widgets.TbButtonColumn' ,	
+						
+						
+
+						),
+						array(
+						'buttonType' => 'button',
+						'type' => 'primary',
+						'size' => 'small',			
+						'label' => 'Delete',
+						
+						'click' => 'js:function(checked){
+								    var values = [];
+								    checked.each(function(){
+
+									         values.push($(this).val());
+									});
+									
+									$("#chkid").val(values);
+
+						}',
+						'htmlOptions' => array('data-toggle'=>'modal','data-target'=>'#mydelete') ,
+										 'class'=>'bootstrap.widgets.TbButtonColumn' ,	
+						
+						
+
+						),
+					array(
+						'buttonType' => 'button',
+						'type' => 'primary',
+						'size' => 'small',			
+						'label' => 'File Category',
+						'items' => $subfc,
+						//'dropdownOptions'=>array('one'=>'one','two'=>'two'),
+						'click' => 'js:function(checked){
+								  $("#yw7").css("display","block");
+								    $("#yw9").css("display","none");
+								    var values = [];
+								    checked.each(function(){
+									         values.push($(this).val());
+									});
+									
+									$("#checkid").val(values);
+						}' 
+						
+
+						),
+
+					array(
+						'buttonType' => 'button',
+						'type' => 'primary',
+						'size' => 'small',			
+						'label' => 'Clients',
+						'items' => $cnames,
+						//'dropdownOptions'=>array('one'=>'one','two'=>'two'),
+						'click' => 'js:function(checked){
+								 $("#yw9").css("display","block");
+								$("#yw7").css("display","none");
+								    var values = [];
+								    checked.each(function(){
+									         values.push($(this).val());
+									});
+									
+									$("#checkid").val(values);
+						}' 
+						
+
+						), 
+					
+			),
+			
+// if grid doesn't have a checkbox column type, it will attach $("#gridId").yiiGridView("update"); 
+// one and this configuration will be part of it
+			'checkBoxColumnConfig' => array(
+										//'class'=>'DataColumn',
+										'name' => 'id',
+										'value' => '$data->client_file_id',
+										//'evaluateHtmlOptions'=>true,
+           								'htmlOptions'=>array('id'=>'"ordering_{$data->client_file_id}"'),
+									),
+	),
+	//'filter'=>$model,
+	'columns'=>array(
+		//'client_file_id',
+		array(
+		'header'=>'File Name',
+		'name'=>'client_file_name',
+		'class' => 'bootstrap.widgets.TbEditableColumn',
+		'headerHtmlOptions' => array('style' => 'width: 250px'),
+		'editable' => array( 
+		'url' => $this->createUrl('clientFiles/inupdatefile'),
+		'placement' => 'right',
+
+		'validate' => 'js: function(value) {
+			    		if($.trim(value) == "") 
+						{ 
+							return "This field is required"; 
+						}
+			    		var fileName = value; 
+			    		var re = /(\.jpg|\.xls|\.pdf|\.gif|\.png|\.ods|\.xlsx)$/i;
+						if(!re.exec(fileName))
+						{
+							return "Invalid file format!";
+						}
+					}',
+		'success'=>'js: function(response, newValue) { $("#clients-grid").yiiGridView("update");}'			
+		)
+	),
+		
+
+		array(
+		'name' => 'file_category_id',
+		//'value'=>'hai',
+		'class' => ' bootstrap.widgets.TbEditableColumn',
+		'headerHtmlOptions' => array('style' => 'width: 200px'),
+		'editable' => array( 
+					'type'  => 'select',
+					/* 'model' => $model,
+					'attribute' => 'file_category_id',*/
+					
+					'url' =>$this->createUrl('clientFiles/inupdate'),
+					
+					'source'=>$getcategories,
+					'placement' => 'right',
+					
+					),
+		'value'=>'$data->fileCategory->file_category_name',
+		//'value'=>'($data->fileCategory->file_category_name=="ADMIN")?("Not Assigned"):($data->clients->client_name)',
+		),
+		
+		array(
+		'header'=>'Client',
+		'name'=>'client_id',
+		'class' => 'bootstrap.widgets.TbEditableColumn',
+		'headerHtmlOptions' => array('style' => 'width: 250px'),
+		'editable' => array( 
+					'type'  => 'select',
+					'url' => $this->createUrl('clientFiles/save'),
+					'source'=>$getclients,
+					'placement' => 'right',
+					'success' =>'js: function(response, newValue) {
+									bootbox.alert(response);
+								$("#clients-grid").yiiGridView("update");	 
+								}'
+					),
+		//'value'=>'$data->clients->client_name',
+		//'value'=>'($data->clients->client_name=="ADMIN")?("Empty"):($data->clients->client_name)',
+		'value'=>'($data->clients->client_name=="Empty")?("ADMIN"):($data->clients->client_name)',
+		),
+
+		
+		array( 'class'=>'CLinkColumn', 'header'=>'Download',
+				'label'=>'Download',
+				'headerHtmlOptions' => array('style' => 'width: 110px'),
+				//'value'=> $model->client_file_path,
+				'urlExpression'=>'Yii::app()->createUrl("clientFiles/download",array("file"=>$data->client_file_path))',
+		),
+		
+		array(  'header'=>'Email',
+				'headerHtmlOptions' => array('style' => 'width: 110px'),
+				'value'=>'($data->mailed=="0")?("EMail Not Send"):("EMail Sent")',
+		),
+		array(
+            'class'=>'CButtonColumn',
+          	'header'=>'Delete',
+            'template'=>'{delete}',
+		)			
+		/*  array(
+            'class'=>'CButtonColumn',
+            'header'=>'Save',
+            'template'=>'{add}',
+			'headerHtmlOptions' => array('style' => 'width: 110px'),
+            'buttons'=>array(
+		        'add'=>array(
+                    'label'=>'Save',
+					// 'imageUrl'=>Yii::app()->request->baseUrl.'/images/icon/add.png',
+                    'url'=>'Yii::app()->createUrl("clientFiles/save", array("id"=>$data->client_file_id)) ',
+					//   'options'=>array("class"=>"btn btn-primary"),
+					'options'=>array("class"=>"btn btn-primary","id"=>"hhh","ajax"=>array('type'=>'POST',
+							                            'success'=>'function(data){
+                            							// alert(data);
+								                          }',
+                            'error'=>'function(jqXHR, textStatus, errorThrown){
+                                alert(errorThrown)
+                            }',
+                        ),)                   
+                ),
+            ),
+        ),*/
+
+	),
+));
+
+$this->attachAjaxUpdateEvent($grid);
+Yii::app()->getClientScript()->registerScript('ajax-Save', ' 
+$("#clients-grid").on("ajaxSave", function(data) {
+alert(data);
+});
+');
+ ?>
